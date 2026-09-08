@@ -1,5 +1,7 @@
+package repository.impl;
 import java.util.*;
-
+import model.User;
+import repository.UserRepository;
 public class InMemoryUserRepository implements UserRepository {
 
     private HashMap<UUID, User> users = new HashMap<>();

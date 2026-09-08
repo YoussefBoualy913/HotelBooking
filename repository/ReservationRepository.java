@@ -1,3 +1,8 @@
+package repository;
+import model.Reservation;
+import java.util.UUID;
+import java.util.Optional;
+import java.util.List;
 public interface ReservationRepository {
 
     void save(Reservation reservation);

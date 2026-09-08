@@ -1,4 +1,4 @@
-
+package util;
 public class ValidationUtils {
 
     public static boolean isNotEmpty(String value) {

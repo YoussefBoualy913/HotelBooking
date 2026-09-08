@@ -1,3 +1,12 @@
+package service;
+import exception.EmailAlreadyExistsException;
+import exception.InvalidCredentialsException;
+import model.User;
+import repository.UserRepository;
+import util.*;
+
+import java.util.Optional;
+
 public class AuthService {
     private UserRepository userRepository;
     private User currentUser;
