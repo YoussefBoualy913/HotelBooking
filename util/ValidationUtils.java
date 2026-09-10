@@ -1,4 +1,7 @@
 package util;
+
+import java.time.LocalDate;
+
 public class ValidationUtils {
 
     public static boolean isNotEmpty(String value) {
@@ -17,5 +20,9 @@ public class ValidationUtils {
 
     public static boolean isValidPhone(String phone) {
         return phone != null && phone.matches("\\d{10}");
+    }
+
+    public static boolean isValidDateRange(LocalDate checkIn, LocalDate checkOut) {
+        return checkOut.isAfter(checkIn);
     }
 }

@@ -1,6 +1,15 @@
+import model.Reservation;
+import model.User;
+import repository.impl.InMemoryReservationRepository;
+import repository.impl.InMemoryRoomRepository;
 import repository.impl.InMemoryUserRepository;
 import service.AuthService;
+import service.AuthServiceReservationService;
+import service.RoomService;
+import util.Initializer;
 import util.InputUtils;
+
+import java.util.List;
 
 public class Main {
 
@@ -14,7 +23,9 @@ public class Main {
         System.out.print("Choice: ");
     }
 
-    private static void showUserMenu() {
+    private static void showUserMenu(User user) {
+        System.out.println("================================");
+        System.out.println("Logged in as: " + user.getFullName());
         System.out.println("================================");
         System.out.println("1. Search available rooms");
         System.out.println("2. View all rooms");
@@ -29,45 +40,99 @@ public class Main {
         System.out.println("0. Exit");
         System.out.print("Choice: ");
     }
-    public static void regester(AuthService authService,InputUtils inputUtils){
-        String fullname =  inputUtils.readString("Fullname:");
-        String email = inputUtils.readString("Email:");
-        String phone = inputUtils.readString("Phone:");
-        String password = inputUtils.readString("Password:");
-        authService.register(fullname,email,phone,password);
-    }
-    public static void login(AuthService authService,InputUtils inputUtils){
-        String email = inputUtils.readString("Email:");
-        String password = inputUtils.readString("Password:");
-        try {
-            authService.login(email,password);
-        }catch (Exception e){
-            System.out.println("errur :"+e.getMessage());
-        }
 
-    }
 
     public static void main(String[] args) {
 
         InMemoryUserRepository userRepository = new InMemoryUserRepository();
+        InMemoryRoomRepository  roomRepository = new InMemoryRoomRepository();
+        InMemoryReservationRepository reservationRepository = new InMemoryReservationRepository();
         AuthService authService = new AuthService(userRepository);
+        AuthServiceReservationService authServiceReservationService = new AuthServiceReservationService(reservationRepository);
         InputUtils inputUtils = new InputUtils();
+        RoomService roomService = new RoomService(roomRepository,reservationRepository,inputUtils);
+        Initializer.initializeUsers(userRepository);
+        Initializer.initializeRooms(roomRepository);
+        authService.autoLogin();
+
         while (true) {
             if(authService.getCurrentUser() == null){
                 showGuestMenu();
                 int choix = inputUtils.readInt("");
                 switch (choix) {
                     case 1:
-                    regester(authService,inputUtils);
+                        try {
+                            authService.register();
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+
                     break;
                     case 2:
-                        login(authService,inputUtils);
+                        try {
+                            authService.login();
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+
                     break;
                     case 0:
                      return;
                     default:
                      System.out.println("Wrong choice");
                      break;
+                }
+            }else {
+                showUserMenu(authService.getCurrentUser());
+                int choix = inputUtils.readInt("");
+                switch (choix) {
+                    case 1:
+                        roomService.searchAvailableRooms();
+                    break;
+                    case 2:
+
+                        roomService.showRooms();
+                        break;
+                    case 3:
+                        try {
+                            authServiceReservationService.createReservation(authService.getCurrentUser(),roomRepository);
+                            System.out.println("Reservation Created");
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+                        break;
+                    case 4:
+                        List<Reservation> reservations =
+                                authServiceReservationService.getMyReservations(authService);
+
+                        if (reservations.isEmpty()) {
+                            System.out.println("You have no reservations.");
+                        } else {
+                            System.out.println("You have " + reservations.size() + " reservations.");
+                            reservations.forEach(System.out::println);
+                        }
+                        break;
+                    case 8:
+                        try {
+                            authService.updateProfile();
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+                        break;
+                    case 9:
+                        try {
+                            authService.changePassword();
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+                        break;
+                    case 10:
+                        authService.logout();
+                        break;
+                    case 0:
+                            return;
+                    default:
+                        System.out.println("Wrong choice");
                 }
             }
 

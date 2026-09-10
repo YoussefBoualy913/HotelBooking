@@ -20,6 +20,7 @@ public class Reservation {
 
     public Reservation(
             UUID userId,
+            String reservationCode,
             String roomNumber,
             LocalDate checkIn,
             LocalDate checkOut,
@@ -29,6 +30,7 @@ public class Reservation {
     ) {
         this.id = UUID.randomUUID();
         this.userId = userId;
+        this.reservationCode = reservationCode;
         this.roomNumber = roomNumber;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
@@ -109,5 +111,17 @@ public class Reservation {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Code: " + reservationCode +
+                " | Room: " + roomNumber +
+                " | Check-in: " + checkIn +
+                " | Check-out: " + checkOut +
+                " | Guests: " + numberOfGuests +
+                " | Nights: " + numberOfNights +
+                " | Total: " + totalPrice + " MAD" +
+                " | Status: " + status;
     }
 }

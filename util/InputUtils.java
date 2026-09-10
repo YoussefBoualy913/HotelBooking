@@ -1,5 +1,7 @@
 package util;
 import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 public class InputUtils {
 
     private final Scanner scanner;
@@ -14,9 +16,36 @@ public class InputUtils {
     }
 
     public int readInt(String message) {
-        System.out.print(message);
-        int value = scanner.nextInt();
-        scanner.nextLine();
-        return value;
+        while (true) {
+            try {
+                System.out.print(message);
+                String input = scanner.nextLine().trim();
+
+                if (input.isEmpty()) {
+                    System.out.println("Number cannot be empty.");
+                    continue;
+                }
+
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
+    public LocalDate readDate(String message) {
+
+        while (true) {
+            try {
+                System.out.print(message);
+
+                String input = scanner.nextLine();
+
+                return LocalDate.parse(input);
+
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date. Use YYYY-MM-DD.");
+            }
+        }
     }
 }
