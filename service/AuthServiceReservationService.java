@@ -1,7 +1,9 @@
 package service;
+import exception.ReservationNotFoundException;
 import exception.RoomNotFoundException;
 import exception.RoomUnavailableException;
 import model.Reservation;
+import model.ReservationStatus;
 import model.Room;
 import model.User;
 import repository.ReservationRepository;
@@ -14,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class AuthServiceReservationService {
@@ -99,6 +102,28 @@ public class AuthServiceReservationService {
 
     public List<Reservation> getMyReservations(AuthService authService) {
         UUID userId = authService.getCurrentUser().getId();
-        return reservationRepository.findByUserId(userId);
+        return reservationRepository.findByUserId(userId)
+                .stream()
+                .filter(reservation -> reservation.getStatus() != ReservationStatus.CANCELLED)
+                .toList();
     }
+    public void cancelReservation() {
+       String reservationCode = inputUtils.readString("Reservation code: ");
+
+        Reservation reservation = reservationRepository
+                .findByCode(reservationCode)
+                .orElseThrow(() ->
+                        new ReservationNotFoundException("Reservation not found"));
+
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            throw new IllegalArgumentException(
+                    "Only confirmed reservations can be cancelled."
+            );
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+
+        reservationRepository.save(reservation);
+    }
+
 }

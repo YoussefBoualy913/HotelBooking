@@ -112,6 +112,14 @@ public class Main {
                             reservations.forEach(System.out::println);
                         }
                         break;
+                    case 7:
+                        try {
+                            authServiceReservationService.cancelReservation();
+                            System.out.println("Reservation Cancelled");
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+                        break;
                     case 8:
                         try {
                             authService.updateProfile();
