@@ -71,7 +71,8 @@ public class RoomService   {
                                 && roomutils.isRoomAvailable(
                                 room.getRoomNumber(),
                                 finalCheckIn,
-                                finalCheckOut
+                                finalCheckOut,
+                                null
                         )
                                 && finalGuestsNumber <= room.getCapacity()
                 )

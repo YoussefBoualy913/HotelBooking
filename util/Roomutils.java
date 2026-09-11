@@ -6,6 +6,7 @@ import repository.impl.InMemoryReservationRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 public  class Roomutils
 {
@@ -19,13 +20,17 @@ public  class Roomutils
     public boolean isRoomAvailable(
             String roomNumber,
             LocalDate checkIn,
-            LocalDate checkOut
+            LocalDate checkOut,
+            UUID reservationId
     ) {
-        List<Reservation> reservations =
-                reservationRepository.findByRoomNumber(roomNumber);
-        return reservations.stream()
+        return reservationRepository
+                .findByRoomNumber(roomNumber)
+                .stream()
                 .filter(reservation ->
                         reservation.getStatus() == ReservationStatus.CONFIRMED)
+                .filter(reservation ->
+                        reservationId == null
+                                || !reservation.getId().equals(reservationId))
                 .noneMatch(reservation ->
                         reservation.getCheckIn().isBefore(checkOut)
                                 && reservation.getCheckOut().isAfter(checkIn)

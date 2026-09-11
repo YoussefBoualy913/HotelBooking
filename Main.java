@@ -56,6 +56,7 @@ public class Main {
         authService.autoLogin();
 
         while (true) {
+
             if(authService.getCurrentUser() == null){
                 showGuestMenu();
                 int choix = inputUtils.readInt("");
@@ -112,6 +113,15 @@ public class Main {
                             reservations.forEach(System.out::println);
                         }
                         break;
+                    case 6:
+                        try {
+                            authServiceReservationService.updateReservation(authService,roomRepository);
+                            System.out.println("Reservation Updated");
+                        }catch (Exception e){
+                            System.out.println("errur:"+e.getMessage());
+                        }
+
+                    break;
                     case 7:
                         try {
                             authServiceReservationService.cancelReservation();

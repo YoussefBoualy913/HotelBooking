@@ -11,8 +11,16 @@ public class InputUtils {
     }
 
     public String readString(String message) {
-        System.out.print(message);
-        return scanner.nextLine();
+        while (true) {
+            System.out.print(message);
+            String input = scanner.nextLine().trim();
+
+            if (!input.isEmpty()) {
+                return input;
+            }
+
+            System.out.println("Input cannot be empty.");
+        }
     }
 
     public int readInt(String message) {
