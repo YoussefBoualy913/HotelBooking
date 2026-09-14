@@ -1,11 +1,15 @@
 package service;
+import exception.RoomNotFoundException;
 import model.Room;
 import model.RoomStatus;
+import model.RoomType;
 import repository.ReservationRepository;
 import repository.RoomRepository;
 import util.InputUtils;
 import util.Roomutils;
 import util.ValidationUtils;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,6 +36,65 @@ public class RoomService   {
                 System.out.println(room);
             });
         }
+    }
+    public Room createRoom(){
+        String roomNumber;
+       while (true) {
+            roomNumber = inputUtils.readString("Enter Room Number: ");
+            try {
+                if (roomRepository.findByRoomNumber(roomNumber).isPresent()) {
+                    throw new IllegalArgumentException("Room number already exists.");
+                }
+            }catch (IllegalArgumentException e){
+                System.out.println(e.getMessage());
+                continue;
+            }
+           break;
+       }
+       int capacity = Integer.parseInt(inputUtils.readString("Enter Room Capacity: "));
+        RoomType roomType ;
+        if(capacity <1){
+            throw new IllegalArgumentException("Room Capacity must be greater than 0.");
+        }else if (capacity == 1) {
+            roomType = RoomType.SINGLE;
+        } else if (capacity == 2) {
+            roomType = RoomType.DOUBLE;
+        }else {
+            roomType = RoomType.SUITE;
+        }
+
+        BigDecimal pricePerNight = new BigDecimal(inputUtils.readString("Enter Room price Per night: "));
+
+        Room room = new Room(roomNumber,roomType,capacity,pricePerNight,RoomStatus.AVAILABLE);
+        roomRepository.save(room);
+        return room;
+    }
+
+    public void updateRoom(
+            String roomNumber,
+            RoomType type,
+            int capacity,
+            BigDecimal pricePerNight
+    ) {
+        Room room = roomRepository.findByRoomNumber(roomNumber)
+                .orElseThrow(() ->
+                        new RoomNotFoundException("Room not found"));
+
+        room.setType(type);
+        room.setCapacity(capacity);
+        room.setPricePerNight(pricePerNight);
+
+        roomRepository.save(room);
+    }
+    public void putRoomInMaintenance(String roomNumber) {
+
+        Room room = roomRepository.findByRoomNumber(roomNumber)
+                .orElseThrow(() ->
+                        new RoomNotFoundException("Room not found"));
+
+        room.setStatus(RoomStatus.MAINTENANCE);
+
+        roomRepository.save(room);
     }
 
     public void searchAvailableRooms(){

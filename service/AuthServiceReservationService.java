@@ -2,7 +2,6 @@ package service;
 
 import exception.ReservationNotFoundException;
 import exception.RoomNotFoundException;
-import exception.RoomUnavailableException;
 import model.Reservation;
 import model.ReservationStatus;
 import model.Room;
@@ -12,19 +11,17 @@ import repository.RoomRepository;
 import util.InputUtils;
 import util.Roomutils;
 import util.ValidationUtils;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class AuthServiceReservationService {
     private InputUtils inputUtils;
     private Roomutils roomutils;
     private ReservationRepository reservationRepository;
-    private int reservationNumber = 1;
+    private int reservationNumber = 5;
 
     public AuthServiceReservationService(ReservationRepository reservationRepository) {
         inputUtils = new InputUtils();
@@ -222,6 +219,54 @@ public class AuthServiceReservationService {
 
 
         reservationRepository.save(reservation);
+    }
+
+  public void reservationDetailes(AuthService authService) {
+
+       String reservationCode =  inputUtils.readString("Reservation code: ");
+      User user =  authService.getCurrentUser();
+
+      Reservation reservation = reservationRepository
+              .findByCode(reservationCode)
+              .orElseThrow(() ->
+                      new ReservationNotFoundException(
+                              "Reservation not found"
+                      ));
+
+      if (!reservation.getUserId().equals(user.getId()) || reservation.getStatus() != ReservationStatus.CONFIRMED) {
+          throw new IllegalArgumentException(
+                  "You cannot show this reservation."
+          );
+      }
+
+      System.out.println();
+      System.out.println("⫷ RESERVATION DETAILS ⫸\n" +
+              "* Code:" +reservation.getReservationCode()+"\n"+
+              "* User:" +user.getFullName()+"\n"+
+              "* Room:" +reservation.getRoomNumber()+"\n"+
+              "* Check-in:" +reservation.getCheckIn()+"\n"+
+              "* Check-out:" +reservation.getCheckOut()+"\n"+
+              "* Guests:" +reservation.getNumberOfGuests()+"\n"+
+              "* Nights:" +reservation.getNumberOfNights()+"\n"+
+              "* Total:" +reservation.getTotalPrice()+"\n"+
+              "* Status:" +reservation.getStatus()+"\n"+
+              "* Reserver at:"+reservation.getCreatedAt()+"\n"+
+              "");
+
+
+  }
+
+    public static void updateExpiredReservations(ReservationRepository reservationRepository) {
+        List<Reservation> reservations = reservationRepository.findAll();
+        LocalDate today = LocalDate.now();
+
+        for (Reservation reservation : reservations) {
+            if (reservation.getStatus() == ReservationStatus.CONFIRMED
+                    && !today.isBefore(reservation.getCheckOut())) {
+
+                reservation.setStatus(ReservationStatus.COMPLETED);
+            }
+        }
     }
 
 }

@@ -13,6 +13,7 @@ public class InMemoryRoomRepository implements RoomRepository {
 
     @Override
     public Optional<Room> findByRoomNumber(String roomNumber) {
+
         return Optional.ofNullable(rooms.get(roomNumber));
     }
 

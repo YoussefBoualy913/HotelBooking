@@ -46,6 +46,7 @@ public class InMemoryReservationRepository implements ReservationRepository {
 
     @Override
     public List<Reservation> findAll() {
+
         return new ArrayList<>(reservations.values());
     }
 }

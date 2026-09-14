@@ -7,6 +7,7 @@ public class User {
     private String email;
     private String phone;
     private String password;
+    private UserRole role;
 
     public User(  String fullName, String email, String phone ,String password) {
 
@@ -15,6 +16,7 @@ public class User {
         this.phone = phone;
         this.id = UUID.randomUUID();
         this.password = password;
+        this.role = UserRole.CLIENT;
     }
 
     public UUID getId() {
@@ -45,6 +47,17 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+    public UserRole getRole() {
+        return role;
+    }
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public boolean isAdmin(){
+        return role == UserRole.ADMIN;
+    }
+
 
 
 }
