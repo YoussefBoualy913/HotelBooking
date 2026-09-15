@@ -2,12 +2,14 @@ package service;
 
 import exception.ReservationNotFoundException;
 import exception.RoomNotFoundException;
+import exception.UnauthorizedException;
 import model.Reservation;
 import model.ReservationStatus;
 import model.Room;
 import model.User;
 import repository.ReservationRepository;
 import repository.RoomRepository;
+import repository.UserRepository;
 import util.InputUtils;
 import util.Roomutils;
 import util.ValidationUtils;
@@ -21,12 +23,14 @@ public class AuthServiceReservationService {
     private InputUtils inputUtils;
     private Roomutils roomutils;
     private ReservationRepository reservationRepository;
+    private AuthService authService;
     private int reservationNumber = 5;
 
-    public AuthServiceReservationService(ReservationRepository reservationRepository) {
+    public AuthServiceReservationService(ReservationRepository reservationRepository, AuthService authService) {
         inputUtils = new InputUtils();
         roomutils = new Roomutils(reservationRepository);
         this.reservationRepository = reservationRepository;
+        this.authService = authService;
     }
 
     public void createReservation(User user, RoomRepository roomRepository) {
@@ -111,12 +115,18 @@ public class AuthServiceReservationService {
 
     public void cancelReservation() {
         String reservationCode = inputUtils.readString("Reservation code: ");
-
+        User user =  authService.getCurrentUser();
         Reservation reservation = reservationRepository
                 .findByCode(reservationCode)
                 .orElseThrow(() ->
                         new ReservationNotFoundException("Reservation not found"));
-
+        if(!user.isAdmin()) {
+            if (!reservation.getUserId().equals(user.getId())) {
+                throw new IllegalArgumentException(
+                        "You cannot update this reservation."
+                );
+            }
+        }
         if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
             throw new IllegalArgumentException(
                     "Only confirmed reservations can be cancelled."
@@ -134,7 +144,7 @@ public class AuthServiceReservationService {
             RoomRepository roomRepository
     ) throws ReservationNotFoundException {
       String  reservationCode = inputUtils.readString("Reservation code: ");
-        UUID userId =  authService.getCurrentUser().getId();
+        User user =  authService.getCurrentUser();
 
         Reservation reservation = reservationRepository
                 .findByCode(reservationCode)
@@ -146,13 +156,13 @@ public class AuthServiceReservationService {
         Room room= roomRepository.findByRoomNumber(reservation.getRoomNumber())
                 .orElseThrow(() ->
                         new ReservationNotFoundException("Room not found"));
-
-        if (!reservation.getUserId().equals(userId)) {
-            throw new IllegalArgumentException(
-                    "You cannot update this reservation."
-            );
+        if(!user.isAdmin()) {
+            if (!reservation.getUserId().equals(user.getId())) {
+                throw new IllegalArgumentException(
+                        "You cannot update this reservation."
+                );
+            }
         }
-
 
         if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
             throw new IllegalArgumentException(
@@ -232,12 +242,13 @@ public class AuthServiceReservationService {
                       new ReservationNotFoundException(
                               "Reservation not found"
                       ));
-
-      if (!reservation.getUserId().equals(user.getId()) || reservation.getStatus() != ReservationStatus.CONFIRMED) {
-          throw new IllegalArgumentException(
-                  "You cannot show this reservation."
-          );
-      }
+     if(!user.isAdmin()) {
+         if (!reservation.getUserId().equals(user.getId()) || reservation.getStatus() != ReservationStatus.CONFIRMED) {
+             throw new IllegalArgumentException(
+                     "You cannot show this reservation."
+             );
+         }
+     }
 
       System.out.println();
       System.out.println("⫷ RESERVATION DETAILS ⫸\n" +
@@ -267,6 +278,16 @@ public class AuthServiceReservationService {
                 reservation.setStatus(ReservationStatus.COMPLETED);
             }
         }
+    }
+    public List<Reservation> getAllReservations() {
+        User currentUser = authService.getCurrentUser();
+        if (currentUser == null || !currentUser.isAdmin()) {
+            throw new UnauthorizedException(
+                    "Only administrators can view all reservations."
+            );
+        }
+
+        return reservationRepository.findAll();
     }
 
 }

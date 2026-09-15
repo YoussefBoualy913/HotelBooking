@@ -1,11 +1,15 @@
 package view;
 
+import model.Reservation;
 import model.User;
 import repository.RoomRepository;
 import service.AuthService;
 import service.AuthServiceReservationService;
 import service.RoomService;
+import service.UserService;
 import util.InputUtils;
+
+import java.util.List;
 
 public class ClientView {
    private final AuthService authService;
@@ -13,17 +17,20 @@ public class ClientView {
    private final AuthServiceReservationService authServiceReservationService;
    private final RoomRepository roomRepository;
    private final InputUtils inputUtils;
+   private final UserService userService;
    public ClientView(AuthService authService,
                      RoomService roomService,
                      AuthServiceReservationService authServiceReservationService,
                      RoomRepository roomRepository,
-                     InputUtils inputUtils
+                     InputUtils inputUtils,
+                     UserService userService
                     ) {
        this.authService = authService;
        this.roomService = roomService;
        this.authServiceReservationService = authServiceReservationService;
        this.inputUtils = inputUtils;
        this.roomRepository = roomRepository;
+       this.userService = userService;
 
    }
     public void showClientMenu(User user) {
@@ -71,7 +78,15 @@ public class ClientView {
                     return true;
                 case 4:
                     try {
-                        authServiceReservationService.reservationDetailes(authService);
+                        List<Reservation> reservations =
+                                authServiceReservationService.getMyReservations(authService);
+
+                        if (reservations.isEmpty()) {
+                            System.out.println("You have no reservations.");
+                        } else {
+                            System.out.println("You have " + reservations.size() + " reservations.");
+                            reservations.forEach(System.out::println);
+                        }
                     }catch (Exception e){
                         System.out.println("errur:"+e.getMessage());
                     }
@@ -101,14 +116,14 @@ public class ClientView {
                     return true;
                 case 8:
                     try {
-                        authService.updateProfile();
+                        userService.updateProfile();
                     }catch (Exception e){
                         System.out.println("errur:"+e.getMessage());
                     }
                     return true;
                 case 9:
                     try {
-                        authService.changePassword();
+                        userService.changePassword();
                     }catch (Exception e){
                         System.out.println("errur:"+e.getMessage());
                     }

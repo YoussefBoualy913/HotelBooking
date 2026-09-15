@@ -6,6 +6,7 @@ import repository.impl.InMemoryUserRepository;
 import service.AuthService;
 import service.AuthServiceReservationService;
 import service.RoomService;
+import service.UserService;
 import util.Initializer;
 import util.InputUtils;
 import view.AdminView;
@@ -21,9 +22,10 @@ public class Main {
         InMemoryUserRepository userRepository = new InMemoryUserRepository();
         InMemoryRoomRepository roomRepository = new InMemoryRoomRepository();
         InMemoryReservationRepository reservationRepository = new InMemoryReservationRepository();
-        AuthService authService = new AuthService(userRepository);
-        AuthServiceReservationService authServiceReservationService = new AuthServiceReservationService(reservationRepository);
         InputUtils inputUtils = new InputUtils();
+        AuthService authService = new AuthService(userRepository);
+        AuthServiceReservationService authServiceReservationService = new AuthServiceReservationService(reservationRepository, authService);
+        UserService userService = new UserService(userRepository,authService,inputUtils);
         RoomService roomService = new RoomService(roomRepository, reservationRepository, inputUtils);
         Initializer.initializeUsers(userRepository);
         Initializer.initializeRooms(roomRepository);
@@ -31,8 +33,9 @@ public class Main {
         authServiceReservationService.updateExpiredReservations(reservationRepository);
         GuestView guestView = new GuestView(authService, inputUtils);
         ClientView clientView = new ClientView(authService,
-                roomService,authServiceReservationService,roomRepository,inputUtils);
-        AdminView adminView = new AdminView(authService,roomService,inputUtils);
+                roomService,authServiceReservationService,roomRepository,inputUtils,userService);
+        AdminView adminView = new AdminView(authService,roomService,inputUtils,
+                userService,authServiceReservationService,roomRepository);
         authService.autoLogin();
 
         boolean running = true;
